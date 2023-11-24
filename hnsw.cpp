@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "hnswlib/hnswlib/hnswlib.h"
+#include "hnswlib-a/hnswlib/hnswlib.h"
 
 //print vector
 template<typename T>
