@@ -4,6 +4,7 @@
 #include <limits>
 #include <algorithm>
 #include <string>
+#include <random>
 
 struct Point {
     std::vector<double> dimensions;
@@ -88,11 +89,11 @@ public:
         root = buildTree(points, 0, 0, points.size() - 1);
     }
 
-    Point nearestNeighbor(const Point& target) {
+    std::pair<Point, double> nearestNeighbor(const Point& target) {
         KDNode* best = nullptr;
         double bestDist = std::numeric_limits<double>::max();
         nearestNeighbor(root, target, best, bestDist, 0);
-        return best ? best->point : Point{{}, "No Match"};
+        return {best ? best->point : Point{{}, "No Match"}, bestDist};
     }
 
     void printTree() {
@@ -100,27 +101,42 @@ public:
     }
 };
 
+// Función para generar puntos aleatorios
+std::vector<Point> generateRandomPoints(int N, int D) {
+    std::vector<Point> points;
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.0, 10.0);
+
+    for (int i = 0; i < N; ++i) {
+        Point p;
+        p.dimensions.resize(D);
+        for (int d = 0; d < D; ++d) {
+            p.dimensions[d] = distribution(generator);
+        }
+        p.name = "Punto " + std::to_string(i + 1);
+        points.push_back(p);
+    }
+
+    return points;
+}
+
 int main() {
-    std::vector<Point> points = {
-        {{2.1, 3.1}, "Punto A"}, 
-        {{5.4, 2.3}, "Punto B"}, 
-        {{9.7, 2.1}, "Punto C"}, 
-        {{4.3, 3.3}, "Punto D"}, 
-        {{2.9, 4.7}, "Punto E"}, 
-        {{7.1, 7.2}, "Punto F"}
-    };
+    int N = 10; // Número de puntos
+    int D = 3;  // Dimensiones
+
+    std::vector<Point> points = generateRandomPoints(N, D);
     KDTree tree(points);
 
     std::cout << "KD Tree:" << std::endl;
     tree.printTree();
 
-    Point query = {{5, 5}, "Consulta"};
-    Point nearest = tree.nearestNeighbor(query);
+    Point query = {{5, 5, 5}, "Consulta"};
+    auto [nearest, distance] = tree.nearestNeighbor(query);
     std::cout << "Nearest neighbor to " << query.name << ": " << nearest.name << " (";
     for (const auto& dim : nearest.dimensions) {
         std::cout << dim << " ";
     }
-    std::cout << ")" << std::endl;
+    std::cout << ") at distance " << distance << std::endl;
 
     return 0;
 }
