@@ -120,6 +120,18 @@ std::vector<Point> generateRandomPoints(int N, int D) {
     return points;
 }
 
+Point generateRandomPoint(int D, const std::string& name) {
+    std::default_random_engine generator(std::random_device{}());
+    std::uniform_real_distribution<double> distribution(0.0, 10.0);
+    Point p;
+    p.dimensions.resize(D);
+    for (int d = 0; d < D; ++d) {
+        p.dimensions[d] = distribution(generator);
+    }
+    p.name = name;
+    return p;
+}
+
 int main() {
     int N = 10; // Número de puntos
     int D = 3;  // Dimensiones
@@ -130,7 +142,13 @@ int main() {
     std::cout << "KD Tree:" << std::endl;
     tree.printTree();
 
-    Point query = {{5, 5, 5}, "Consulta"};
+    Point query = generateRandomPoint(D, "Consulta");
+    std::cout << "Query Point: " << query.name << " (";
+    for (const auto& dim : query.dimensions) {
+        std::cout << dim << " ";
+    }
+    std::cout << ")" << std::endl;
+
     auto [nearest, distance] = tree.nearestNeighbor(query);
     std::cout << "Nearest neighbor to " << query.name << ": " << nearest.name << " (";
     for (const auto& dim : nearest.dimensions) {
