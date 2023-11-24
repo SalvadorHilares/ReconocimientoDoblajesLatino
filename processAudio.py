@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 
 # Cargar un archivo de audio
-audio_path = 'goku.mp3'
+audio_path = 'Audios/goku.wav'
 y, sr = librosa.load(audio_path)
 
 # Extraer algunas características
