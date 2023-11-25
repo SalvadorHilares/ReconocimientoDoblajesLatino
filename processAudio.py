@@ -1,15 +1,34 @@
+import os
 import librosa
+import pandas as pd
 import numpy as np
 
-# Cargar un archivo de audio
-audio_path = 'Audios/goku.wav'
-y, sr = librosa.load(audio_path)
+# Define la ruta de la carpeta que contiene las subcarpetas con los audios
+carpeta_principal = 'Audios'
 
-# Extraer algunas características
-mfccs = librosa.feature.mfcc(y=y, sr=sr)
+# Lista para almacenar los vectores y los nombres de las carpetas
+datos = []
 
-# Vectorización (en este caso, los MFCC ya están en forma de matriz)
-audio_vector = np.mean(mfccs, axis=1)
+# Iterar sobre cada subcarpeta y sus archivos
+for carpeta in os.listdir(carpeta_principal):
+    ruta_carpeta = os.path.join(carpeta_principal, carpeta)
+    
+    if os.path.isdir(ruta_carpeta):
+        for archivo in os.listdir(ruta_carpeta):
+            if archivo.endswith('.wav'):  # Asegúrate de que es un archivo de audio
+                ruta_archivo = os.path.join(ruta_carpeta, archivo)
+                
+                # Cargar el archivo de audio
+                y, sr = librosa.load(ruta_archivo)
+                
+                # Extraer características, por ejemplo, MFCC
+                mfccs = librosa.feature.mfcc(y=y, sr=sr)
+                mfccs_media = np.mean(mfccs, axis=1).tolist()  # Convertir a lista
+                print(mfccs_media, carpeta)
+                
+                # Añadir el vector y el nombre de la carpeta a la lista
+                datos.append([mfccs_media, carpeta])
 
-# Ahora 'audio_vector' es tu representación vectorial del audio
-print(audio_vector)
+# Crear un DataFrame de pandas y guardar en CSV
+df = pd.DataFrame(datos, columns=['Vector', 'ActorDoblaje'])
+df.to_csv('audio_features.csv', index=False)

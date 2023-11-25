@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <string>
 #include <random>
+#include <fstream>
+#include <sstream>
 
 struct Point {
     std::vector<double> dimensions;
@@ -14,6 +16,57 @@ struct Point {
     const double& operator[](size_t i) const { return dimensions[i]; }
     size_t size() const { return dimensions.size(); }
 };
+
+std::string cleanNumberString(const std::string& numStr) {
+    std::string cleanedStr = numStr;
+    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), '['), cleanedStr.end());
+    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), ']'), cleanedStr.end());
+    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), '"'), cleanedStr.end());
+    cleanedStr.erase(std::remove_if(cleanedStr.begin(), cleanedStr.end(), isspace), cleanedStr.end());
+    return cleanedStr;
+}
+
+std::vector<double> parseVector(const std::string& str) {
+    std::vector<double> result;
+    std::istringstream iss(str);
+    std::string s;
+    while (getline(iss, s, ',')) {
+        std::string cleanStr = cleanNumberString(s);
+        if (!cleanStr.empty()) {
+            try {
+                result.push_back(std::stod(cleanStr));
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "Error de conversión en std::stod con la cadena: '" << cleanStr << "'" << std::endl;
+                throw;
+            }
+        }
+    }
+    return result;
+}
+
+std::vector<Point> readPointsFromCSV(const std::string& filename) {
+    std::vector<Point> points;
+    std::ifstream file(filename);
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string vectorStr, name;
+
+        std::getline(ss, vectorStr, ',');
+        std::getline(ss, name);
+
+        try {
+            Point point;
+            point.dimensions = parseVector(vectorStr);
+            point.name = name;
+            points.push_back(point);
+        } catch (const std::exception& e) {
+            std::cerr << "Error al procesar la línea: " << line << std::endl;
+            throw;
+        }
+    }
+    return points;
+}
 
 struct KDNode {
     Point point;
@@ -134,9 +187,12 @@ Point generateRandomPoint(int D, const std::string& name) {
 
 int main() {
     int N = 10; // Número de puntos
-    int D = 3;  // Dimensiones
+    int D = 20;  // Dimensiones
+    //std::vector<Point> points = generateRandomPoints(N, D);
 
-    std::vector<Point> points = generateRandomPoints(N, D);
+    std::string filename = "audio_features.csv";
+    std::vector<Point> points = readPointsFromCSV(filename);
+
     KDTree tree(points);
 
     std::cout << "KD Tree:" << std::endl;
