@@ -30,5 +30,5 @@ for carpeta in os.listdir(carpeta_principal):
                 datos.append([mfccs_media, carpeta])
 
 # Crear un DataFrame de pandas y guardar en CSV
-df = pd.DataFrame(datos, columns=['Vector', 'ActorDoblaje'])
+df = pd.DataFrame(datos)
 df.to_csv('audio_features.csv', index=False)

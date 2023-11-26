@@ -17,57 +17,86 @@ struct Point {
     size_t size() const { return dimensions.size(); }
 };
 
-std::string cleanNumberString(const std::string& numStr) {
-    std::string cleanedStr = numStr;
-    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), '['), cleanedStr.end());
-    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), ']'), cleanedStr.end());
-    cleanedStr.erase(std::remove(cleanedStr.begin(), cleanedStr.end(), '"'), cleanedStr.end());
-    cleanedStr.erase(std::remove_if(cleanedStr.begin(), cleanedStr.end(), isspace), cleanedStr.end());
-    return cleanedStr;
-}
-
-std::vector<double> parseVector(const std::string& str) {
-    std::vector<double> result;
-    std::istringstream iss(str);
-    std::string s;
-    while (getline(iss, s, ',')) {
-        std::string cleanStr = cleanNumberString(s);
-        if (!cleanStr.empty()) {
-            try {
-                result.push_back(std::stod(cleanStr));
-            } catch (const std::invalid_argument& e) {
-                std::cerr << "Error de conversión en std::stod con la cadena: '" << cleanStr << "'" << std::endl;
-                throw;
-            }
-        }
+void printVector(const std::vector<double>& v) {
+    std::cout << "(";
+    for (const auto& dim : v) {
+        std::cout << dim << " ";
     }
-    return result;
+    std::cout << ")" << std::endl;
 }
 
-std::vector<Point> readPointsFromCSV(const std::string& filename) {
+Point generateRandomPoint(int D, const std::string& name) {
+    std::default_random_engine generator(std::random_device{}());
+    std::uniform_real_distribution<double> distribution(0.0, 10.0);
+    Point p;
+    p.dimensions.resize(D);
+    for (int d = 0; d < D; ++d) {
+        p.dimensions[d] = distribution(generator);
+    }
+    p.name = name;
+    return p;
+}
+
+std::vector<Point> generateRandomPoints(int N, int D) {
     std::vector<Point> points;
-    std::ifstream file(filename);
-    std::string line;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string vectorStr, name;
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.0, 10.0);
 
-        std::getline(ss, vectorStr, ',');
-        std::getline(ss, name);
-
-        try {
-            Point point;
-            point.dimensions = parseVector(vectorStr);
-            point.name = name;
-            points.push_back(point);
-        } catch (const std::exception& e) {
-            std::cerr << "Error al procesar la línea: " << line << std::endl;
-            throw;
+    for (int i = 0; i < N; ++i) {
+        Point p;
+        p.dimensions.resize(D);
+        for (int d = 0; d < D; ++d) {
+            p.dimensions[d] = distribution(generator);
         }
+        p.name = "Punto " + std::to_string(i + 1);
+        points.push_back(p);
     }
+
     return points;
 }
 
+std::vector<Point> readCSV(const std::string& filename) {
+    std::vector<Point> points;
+    std::ifstream file(filename);
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string token;
+        Point point;
+
+        // Leer las dimensiones
+        while (std::getline(ss, token, ',')) {
+            if (ss.peek() == ' ') ss.ignore();
+            bool last = false;
+            if (token[token.size() - 1] == '"'){
+                last = true;
+            }
+            if (token[0] == '"' || token[1] == '[' || token[token.size() - 2] == ']' || token[token.size() - 1] == '"') {
+                // Eliminar corchetes si existen
+                token.erase(std::remove(token.begin(), token.end(), '['), token.end());
+                token.erase(std::remove(token.begin(), token.end(), '"'), token.end());
+                token.erase(std::remove(token.begin(), token.end(), ']'), token.end());
+            }
+
+            if (std::stringstream(token) >> token) {
+                // Convertir a double y agregar a las dimensiones
+                point.dimensions.push_back(std::stod(token));
+                if (last) break;
+            }
+            //printVector(point.dimensions);
+        }
+
+        // Leer el nombre
+        if (std::getline(ss, token, ',')) {
+            point.name = token;
+        }
+
+        points.push_back(point);
+    }
+
+    return points;
+}
 struct KDNode {
     Point point;
     KDNode *left, *right;
@@ -146,7 +175,7 @@ public:
         KDNode* best = nullptr;
         double bestDist = std::numeric_limits<double>::max();
         nearestNeighbor(root, target, best, bestDist, 0);
-        return {best ? best->point : Point{{}, "No Match"}, bestDist};
+        return {best ? best->point : Point{{}, "No Match"}, bestDist}; 
     }
 
     void printTree() {
@@ -154,59 +183,47 @@ public:
     }
 };
 
-// Función para generar puntos aleatorios
-std::vector<Point> generateRandomPoints(int N, int D) {
-    std::vector<Point> points;
-    std::default_random_engine generator;
-    std::uniform_real_distribution<double> distribution(0.0, 10.0);
+Point readQueryPoint(const std::string& filename) {
+    std::ifstream file(filename);
+    std::string line;
+    Point queryPoint;
 
-    for (int i = 0; i < N; ++i) {
-        Point p;
-        p.dimensions.resize(D);
-        for (int d = 0; d < D; ++d) {
-            p.dimensions[d] = distribution(generator);
+    if (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string number;
+        while (std::getline(iss, number, ',')) {
+            queryPoint.dimensions.push_back(std::stod(number));
         }
-        p.name = "Punto " + std::to_string(i + 1);
-        points.push_back(p);
     }
-
-    return points;
-}
-
-Point generateRandomPoint(int D, const std::string& name) {
-    std::default_random_engine generator(std::random_device{}());
-    std::uniform_real_distribution<double> distribution(0.0, 10.0);
-    Point p;
-    p.dimensions.resize(D);
-    for (int d = 0; d < D; ++d) {
-        p.dimensions[d] = distribution(generator);
-    }
-    p.name = name;
-    return p;
+    return queryPoint;
 }
 
 int main() {
     int N = 10; // Número de puntos
     int D = 20;  // Dimensiones
+    
     //std::vector<Point> points = generateRandomPoints(N, D);
-
-    std::string filename = "audio_features.csv";
-    std::vector<Point> points = readPointsFromCSV(filename);
+   std::string filename = "audio_features.csv"; // Cambia esto por la ruta de tu archivo
+    std::vector<Point> points = readCSV(filename);
 
     KDTree tree(points);
 
-    std::cout << "KD Tree:" << std::endl;
-    tree.printTree();
+    //std::cout << "KD Tree:" << std::endl;
+    //tree.printTree();
 
-    Point query = generateRandomPoint(D, "Consulta");
-    std::cout << "Query Point: " << query.name << " (";
-    for (const auto& dim : query.dimensions) {
-        std::cout << dim << " ";
-    }
-    std::cout << ")" << std::endl;
+    std::string queryFilename = "query.txt";
+    Point query = readQueryPoint(queryFilename);
+    query.name = "Query";
+    // //Print nearest neighbor result only
+    // auto [nearest, distance] = tree.nearestNeighbor(query);
+    // std::cout << "Nearest neighbor to " << query.name << " is " << nearest.name;
+    // std::cout << " at distance " << distance << std::endl;
 
+    //Print nearest neighbor
+    printVector(query.dimensions);
     auto [nearest, distance] = tree.nearestNeighbor(query);
-    std::cout << "Nearest neighbor to " << query.name << ": " << nearest.name << " (";
+    std::cout << nearest.name << std::endl;
+    std::cout << "Nearest neighbor is " << nearest.name << " (";
     for (const auto& dim : nearest.dimensions) {
         std::cout << dim << " ";
     }
