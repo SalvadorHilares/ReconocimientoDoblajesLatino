@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Ejecuta el script de Python
-python3 queryAudio.py
+python3 Processing/queryAudio.py
 
 # Ejecuta el programa en C++
-g++ -o kdtree kdtree.cpp
-./kdtree
+g++ -o main main.cpp
+./main

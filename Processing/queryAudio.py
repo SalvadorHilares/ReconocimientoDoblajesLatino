@@ -16,5 +16,5 @@ audio_vector = np.mean(mfccs, axis=1)
 vector_str = ', '.join(map(str, audio_vector))
 
 # Guardar en un archivo de texto
-with open('query.txt', 'w') as file:
+with open('Processing/query.txt', 'w') as file:
     file.write(vector_str)
