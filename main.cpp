@@ -1,8 +1,6 @@
 #include "kdtree.h"
 
 int main() {
-    int N = 10; // Número de puntos
-    int D = 20;  // Dimensiones
     int k = 5; // número de vecinos más cercanos a buscar
 
     //std::vector<Point> points = generateRandomPoints(N, D);
@@ -33,6 +31,9 @@ int main() {
     for (const auto& neighbor : neighbors) {
         std::cout << "Vecino: " << neighbor.second->point.name << ", Distancia: " << neighbor.first << std::endl;
     }
+
+    //Print most frequent name
+    std::cout << "El nombre más frecuente es: " << findMostFrequentName(neighbors) << std::endl;
 
     return 0;
 }

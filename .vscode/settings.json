@@ -60,6 +60,7 @@
         "cstring": "cpp",
         "bitset": "cpp",
         "map": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "iomanip": "cpp"
     }
 }

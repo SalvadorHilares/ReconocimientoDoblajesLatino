@@ -23,4 +23,16 @@ struct Point {
     size_t size() const { return dimensions.size(); }
 };
 
+struct KDNode {
+    Point point;
+    KDNode *left, *right;
+};
+
+using PointDistancePair = std::pair<double, KDNode*>;
+struct Compare {
+    bool operator()(const PointDistancePair& a, const PointDistancePair& b) {
+        return a.first > b.first; // Compara basado en la distancia, el más cercano al principio
+    }
+};
+
 #endif

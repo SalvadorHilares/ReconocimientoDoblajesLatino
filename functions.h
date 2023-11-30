@@ -84,6 +84,23 @@ std::vector<Point> readCSV(const std::string& filename) {
     return points;
 }
 
+std::string findMostFrequentName(const std::vector<PointDistancePair>& neighbors) {
+    std::unordered_map<std::string, int> nameFrequency;
+    for (const auto& neighbor : neighbors) {
+        nameFrequency[neighbor.second->point.name]++;
+    }
+
+    std::string mostFrequentName;
+    int maxFrequency = 0;
+    for (const auto& entry : nameFrequency) {
+        if (entry.second > maxFrequency) {
+            maxFrequency = entry.second;
+            mostFrequentName = entry.first;
+        }
+    }
+
+    return mostFrequentName;
+}
 
 #endif
 // End of file
