@@ -10,6 +10,9 @@
 #include <random>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+#include <iomanip>
+#include <queue>
 
 struct Point {
     std::vector<double> dimensions;

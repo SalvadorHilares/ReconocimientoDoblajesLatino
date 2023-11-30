@@ -8,6 +8,13 @@ struct KDNode {
     KDNode *left, *right;
 };
 
+using PointDistancePair = std::pair<double, KDNode*>;
+struct Compare {
+    bool operator()(const PointDistancePair& a, const PointDistancePair& b) {
+        return a.first > b.first; // Compara basado en la distancia, el más cercano al principio
+    }
+};
+
 class KDTree {
 private:
     KDNode* root;
@@ -58,6 +65,31 @@ private:
         }
     }
 
+    void nearestNeighbors(KDNode* node, const Point& target, std::priority_queue<PointDistancePair, std::vector<PointDistancePair>, Compare>& bestPoints, double& maxDist, int depth, int k) {
+        if (node == nullptr) return;
+
+        double d = distance(target, node->point);
+        if (bestPoints.size() < k || d < maxDist) {
+            bestPoints.push({d, node});
+            if (bestPoints.size() > k) {
+                bestPoints.pop();
+            }
+            maxDist = bestPoints.top().first;
+        }
+
+        int axis = depth % target.size();
+        double delta = target[axis] - node->point[axis];
+        double delta2 = delta * delta;
+
+        KDNode *first = (delta < 0) ? node->left : node->right;
+        KDNode *second = (delta < 0) ? node->right : node->left;
+
+        nearestNeighbors(first, target, bestPoints, maxDist, depth + 1, k);
+        if (delta2 < maxDist) {
+            nearestNeighbors(second, target, bestPoints, maxDist, depth + 1, k);
+        }
+    }
+
     void printTree(KDNode* node, int depth) {
         if (node == nullptr) return;
 
@@ -87,6 +119,20 @@ public:
     void printTree() {
         printTree(root, 0);
     }
+
+    std::vector<PointDistancePair> kNearestNeighbors(const Point& target, int k) {
+        std::priority_queue<PointDistancePair, std::vector<PointDistancePair>, Compare> bestPoints;
+        double maxDist = std::numeric_limits<double>::max();
+        nearestNeighbors(root, target, bestPoints, maxDist, 0, k);
+
+        std::vector<PointDistancePair> result;
+        while (!bestPoints.empty()) {
+            result.push_back(bestPoints.top());
+            bestPoints.pop();
+        }
+        return result;
+    }
+
 };
 
 Point readQueryPoint(const std::string& filename) {
