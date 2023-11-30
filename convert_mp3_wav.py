@@ -11,4 +11,4 @@ def convert_mp4_to_wav(folder_path):
             audio.write_audiofile(audio_path)
 
 # Reemplaza 'path_to_your_folder' con la ruta de tu carpeta de videos MP4
-convert_mp4_to_wav('./Audios/Laura Torres')
+convert_mp4_to_wav('./Audios/Arturo Mercado')
