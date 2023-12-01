@@ -3,6 +3,8 @@ import './App.css';
 
 function App() {
   const [error, setError] = useState('');
+  const [result, setResult] = useState('');
+
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -27,6 +29,7 @@ function App() {
           }
   
           const result = await response.text();
+          setResult(result);
           console.log(result);
         } catch (error) {
           console.error("Error al cargar el archivo:", error);
@@ -46,7 +49,7 @@ function App() {
       <input type="file" onChange={handleFileChange} />
       {error && <div className="error-message">{error}</div>}
       <div className='result-container'>
-        <h3>Mario Castañeda</h3>
+        <h3>{result }</h3>
       </div>
     </>
   );
