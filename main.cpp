@@ -1,7 +1,7 @@
 #include "kdtree.h"
 
 int main() {
-    int k = 10; // número de vecinos más cercanos a buscar
+    int k = 5; // número de vecinos más cercanos a buscar
 
     //std::vector<Point> points = generateRandomPoints(N, D);
     std::string filename = "audio_features.csv"; // Cambia esto por la ruta de tu archivo
