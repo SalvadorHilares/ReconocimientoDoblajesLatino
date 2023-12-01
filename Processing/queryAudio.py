@@ -1,9 +1,16 @@
 import librosa
 import numpy as np
+import sys
 
-# Cargar un archivo de audio
-s = input('Ingrese el nombre del archivo de audio: ')
-audio_path = 'Querys/' + s + '.wav'
+# Verifica si se recibió el nombre del archivo como argumento
+if len(sys.argv) < 2:
+    print("Error: No se proporcionó un nombre de archivo")
+    sys.exit(1)
+
+# El primer argumento de la línea de comandos es el nombre del archivo
+audio_path = sys.argv[1]
+
+# Cargar el archivo de audio
 y, sr = librosa.load(audio_path)
 
 # Extraer algunas características

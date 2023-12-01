@@ -4,6 +4,8 @@
 #include <boost/config.hpp>
 #include <iostream>
 #include <string>
+#include <cstdlib>
+#include "../utils.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -19,6 +21,7 @@ void set_default_headers(http::response<http::string_body>& res) {
 
 void handle_request(http::request<http::string_body>&& req, http::response<http::string_body>& res) {
     // Configurar encabezados CORS por defecto
+    
     set_default_headers(res);
 
     // Manejo de solicitudes OPTIONS (CORS preflight)
@@ -33,16 +36,30 @@ void handle_request(http::request<http::string_body>&& req, http::response<http:
     // Comprueba si la solicitud es para una ruta específica y es de tipo POST
     if (req.method() == http::verb::post && req.target() == "/upload") {
         try {
-            // Procesar el archivo cargado aquí
+            // Suponiendo que el cuerpo de la solicitud es la ruta del archivo de audio
+            std::string audioFilePath = req.body();
+
+            // Construye el comando para ejecutar el script de Python
+            std::string command = "python3 ../Processing/queryAudio.py " + audioFilePath;
+
+            // Ejecuta el comando
+            int result = std::system(command.c_str());
+
+            if (result != 0) {
+                // Manejo de errores en la ejecución del script
+                throw std::runtime_error("Error al ejecutar el script de Python");
+            }
+
+            std::string nearestNeighbor = nameOfNearestNeighbor();
 
             // Establecer respuesta
             res.result(http::status::ok);
-            res.body() = "TODO OK CON LA PETICION AL FRONT"; // Mensaje actualizado
+            res.body() = nearestNeighbor;
             res.prepare_payload();
         } catch (const std::exception& e) {
             // Manejo de errores
             res.result(http::status::internal_server_error);
-            res.body() = "Error al procesar el archivo";
+            res.body() = e.what();
             res.prepare_payload();
         }
     } else {
