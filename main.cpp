@@ -1,5 +1,9 @@
 #include "kdtree.h"
 
+std::string nameOfNearestNeighbor(std::pair<Point, double> nearestNeighbor) {
+    return nearestNeighbor.first.name;
+}
+
 int main() {
     int k = 5; // número de vecinos más cercanos a buscar
 
@@ -34,6 +38,5 @@ int main() {
 
     //Print most frequent name
     std::cout << "El nombre más frecuente es: " << findMostFrequentName(neighbors) << std::endl;
-
     return 0;
 }
