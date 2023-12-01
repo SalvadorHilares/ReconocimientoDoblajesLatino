@@ -3,7 +3,7 @@ import numpy as np
 
 # Cargar un archivo de audio
 s = input('Ingrese el nombre del archivo de audio: ')
-audio_path = s + '.wav'
+audio_path = 'Querys/' + s + '.wav'
 y, sr = librosa.load(audio_path)
 
 # Extraer algunas características
